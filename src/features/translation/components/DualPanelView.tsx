@@ -1,3 +1,7 @@
+"use client";
+
+import { useState } from "react";
+
 interface Props {
   original: string[];
   translations: string[];
@@ -6,6 +10,14 @@ interface Props {
 }
 
 export default function DualPanelView({ original, translations, activeIndex, onTapSentence }: Props) {
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+
+  function highlightClass(i: number): string {
+    if (activeIndex === i) return "bg-amber-200/60";
+    if (hoveredIndex === i) return "bg-amber-100/70";
+    return "hover:bg-amber-100/50";
+  }
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div>
@@ -17,9 +29,9 @@ export default function DualPanelView({ original, translations, activeIndex, onT
             <p
               key={i}
               onClick={() => onTapSentence(i)}
-              className={`text-lg leading-relaxed cursor-pointer rounded-sm px-1 -mx-1 transition-colors ${
-                activeIndex === i ? "bg-amber-200/60" : "hover:bg-amber-100/50"
-              }`}
+              onMouseEnter={() => setHoveredIndex(i)}
+              onMouseLeave={() => setHoveredIndex((cur) => (cur === i ? null : cur))}
+              className={`text-lg leading-relaxed cursor-pointer rounded-sm px-1 -mx-1 transition-colors ${highlightClass(i)}`}
               style={{ fontFamily: "var(--font-jp)" }}
             >
               {s}
@@ -37,9 +49,9 @@ export default function DualPanelView({ original, translations, activeIndex, onT
             <p
               key={i}
               onClick={() => onTapSentence(i)}
-              className={`text-base leading-relaxed cursor-pointer rounded-sm px-1 -mx-1 transition-colors ${
-                activeIndex === i ? "bg-amber-200/60" : "hover:bg-amber-100/50"
-              } text-stone-700`}
+              onMouseEnter={() => setHoveredIndex(i)}
+              onMouseLeave={() => setHoveredIndex((cur) => (cur === i ? null : cur))}
+              className={`text-base leading-relaxed cursor-pointer rounded-sm px-1 -mx-1 transition-colors text-stone-700 ${highlightClass(i)}`}
             >
               {t}
             </p>

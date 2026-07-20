@@ -24,7 +24,7 @@ export default function TranslationTab({ selection, keyManager }: Props) {
   const [inputSource, setInputSource] = useState<InputSource>("text");
 
   // --- Text-input workflow state ---
-  const [mode, setMode] = useState<TranslationMode>("normal");
+  const [mode, setMode] = useState<TranslationMode>("translate_only");
   const [inputText, setInputText] = useState("");
   const [sentences, setSentences] = useState<string[] | null>(null);
   const [ingestLoading, setIngestLoading] = useState(false);

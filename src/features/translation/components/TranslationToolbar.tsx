@@ -8,7 +8,7 @@ interface Props {
 export default function TranslationToolbar({ mode, onChange }: Props) {
   return (
     <div className="flex items-center gap-5 text-sm text-stone-700">
-      <label className="flex items-center gap-1.5 cursor-pointer">
+      {/* <label className="flex items-center gap-1.5 cursor-pointer">
         <input
           type="checkbox"
           checked={mode === "normal"}
@@ -16,7 +16,7 @@ export default function TranslationToolbar({ mode, onChange }: Props) {
           className="accent-stone-800"
         />
         Normal Mode
-      </label>
+      </label> */}
       <label className="flex items-center gap-1.5 cursor-pointer">
         <input
           type="checkbox"
