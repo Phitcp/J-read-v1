@@ -5,6 +5,7 @@ import { callWithKeyRotation } from "@/shared/services/withKeyRotation";
 import { IngestResult, ExplainResult } from "@/features/translation/types";
 import { WritingReviewResult } from "@/features/writing/types";
 import { JlptLevel, ExerciseItem, GrammarCheckResult } from "@/features/grammar/types";
+import type { ImageInput } from "@/core/models/types";
 
 async function parseJsonOrThrow<T>(res: Response): Promise<T> {
   const data = await res.json();
@@ -32,6 +33,35 @@ export async function ingestText(
   });
 }
 
+export async function ocrImage(
+  image: ImageInput,
+  selection: ModelSelection,
+  keyManager: ApiKeyManager
+): Promise<IngestResult> {
+  return callWithKeyRotation(selection, keyManager, async (apiKey) => {
+    const res = await fetch("/api/ocr", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ image, providerConfig: { ...selection, apiKey } }),
+    });
+    return parseJsonOrThrow<IngestResult>(res);
+  });
+}
+
+export async function translateBatch(
+  sentences: string[],
+  selection: ModelSelection,
+  keyManager: ApiKeyManager
+): Promise<{ translations: string[] }> {
+  return callWithKeyRotation(selection, keyManager, async (apiKey) => {
+    const res = await fetch("/api/translate-batch", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sentences, providerConfig: { ...selection, apiKey } }),
+    });
+    return parseJsonOrThrow<{ translations: string[] }>(res);
+  });
+}
 export async function explainSentence(
   params: { sentence: string; contextBefore?: string; contextAfter?: string },
   selection: ModelSelection,

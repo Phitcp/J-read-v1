@@ -5,7 +5,9 @@ const cache = new Map<string, string>();
 
 export type PromptName =
   | "translation-segment"
+  | "translation-segment-image"
   | "translation-explain"
+  | "translation-batch"
   | "writing"
   | "grammar-generate"
   | "grammar-check"

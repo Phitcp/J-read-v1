@@ -1,9 +1,21 @@
 import { ProviderConfig } from "@/shared/types/provider";
-import { ModelProviderAdapter, HealthResult } from "./types";
+import { ModelProviderAdapter, HealthResult, ImageInput } from "./types";
 import { streamFromSend } from "./streamHelper";
 import { ProviderQuotaError } from "./errors";
 
-async function send(config: ProviderConfig, systemPrompt: string, userPrompt: string): Promise<string> {
+async function send(
+  config: ProviderConfig,
+  systemPrompt: string,
+  userPrompt: string,
+  image?: ImageInput
+): Promise<string> {
+  const content = image
+    ? [
+        { type: "image", source: { type: "base64", media_type: image.mediaType, data: image.data } },
+        { type: "text", text: userPrompt },
+      ]
+    : userPrompt;
+
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
@@ -15,7 +27,7 @@ async function send(config: ProviderConfig, systemPrompt: string, userPrompt: st
       model: config.model,
       max_tokens: 1500,
       system: systemPrompt,
-      messages: [{ role: "user", content: userPrompt }],
+      messages: [{ role: "user", content }],
     }),
   });
 
@@ -56,6 +68,7 @@ async function health(config: ProviderConfig): Promise<HealthResult> {
 
 export const anthropicAdapter: ModelProviderAdapter = {
   send,
-  stream: (config, systemPrompt, userPrompt) => streamFromSend(send(config, systemPrompt, userPrompt)),
+  stream: (config, systemPrompt, userPrompt, image) =>
+    streamFromSend(send(config, systemPrompt, userPrompt, image)),
   health,
 };

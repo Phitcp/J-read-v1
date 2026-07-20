@@ -1,9 +1,21 @@
 import { ProviderConfig } from "@/shared/types/provider";
-import { ModelProviderAdapter, HealthResult } from "./types";
+import { ModelProviderAdapter, HealthResult, ImageInput } from "./types";
 import { streamFromSend } from "./streamHelper";
 import { ProviderQuotaError } from "./errors";
 
-async function send(config: ProviderConfig, systemPrompt: string, userPrompt: string): Promise<string> {
+async function send(
+  config: ProviderConfig,
+  systemPrompt: string,
+  userPrompt: string,
+  image?: ImageInput
+): Promise<string> {
+  const userContent = image
+    ? [
+        { type: "text", text: userPrompt },
+        { type: "image_url", image_url: { url: `data:${image.mediaType};base64,${image.data}` } },
+      ]
+    : userPrompt;
+
   const res = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
     headers: {
@@ -14,7 +26,7 @@ async function send(config: ProviderConfig, systemPrompt: string, userPrompt: st
       model: config.model,
       messages: [
         { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt },
+        { role: "user", content: userContent },
       ],
       response_format: { type: "json_object" },
     }),
@@ -54,6 +66,7 @@ async function health(config: ProviderConfig): Promise<HealthResult> {
 
 export const openaiAdapter: ModelProviderAdapter = {
   send,
-  stream: (config, systemPrompt, userPrompt) => streamFromSend(send(config, systemPrompt, userPrompt)),
+  stream: (config, systemPrompt, userPrompt, image) =>
+    streamFromSend(send(config, systemPrompt, userPrompt, image)),
   health,
 };

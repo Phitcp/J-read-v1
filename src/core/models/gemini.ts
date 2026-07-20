@@ -1,17 +1,27 @@
 import { ProviderConfig } from "@/shared/types/provider";
-import { ModelProviderAdapter, HealthResult } from "./types";
+import { ModelProviderAdapter, HealthResult, ImageInput } from "./types";
 import { streamFromSend } from "./streamHelper";
 import { ProviderQuotaError } from "./errors";
 
-async function send(config: ProviderConfig, systemPrompt: string, userPrompt: string): Promise<string> {
+async function send(
+  config: ProviderConfig,
+  systemPrompt: string,
+  userPrompt: string,
+  image?: ImageInput
+): Promise<string> {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${config.model}:generateContent?key=${config.apiKey}`;
+
+  const parts: object[] = [{ text: userPrompt }];
+  if (image) {
+    parts.push({ inlineData: { mimeType: image.mediaType, data: image.data } });
+  }
 
   const res = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       systemInstruction: { parts: [{ text: systemPrompt }] },
-      contents: [{ role: "user", parts: [{ text: userPrompt }] }],
+      contents: [{ role: "user", parts }],
       generationConfig: { responseMimeType: "application/json" },
     }),
   });
@@ -50,6 +60,7 @@ async function health(config: ProviderConfig): Promise<HealthResult> {
 
 export const geminiAdapter: ModelProviderAdapter = {
   send,
-  stream: (config, systemPrompt, userPrompt) => streamFromSend(send(config, systemPrompt, userPrompt)),
+  stream: (config, systemPrompt, userPrompt, image) =>
+    streamFromSend(send(config, systemPrompt, userPrompt, image)),
   health,
 };
